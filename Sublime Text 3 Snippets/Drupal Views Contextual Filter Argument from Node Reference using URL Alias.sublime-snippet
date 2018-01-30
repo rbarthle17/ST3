@@ -1,0 +1,18 @@
+<snippet>
+	<content><![CDATA[
+/* 
+  this goes in the PHP code validatior of the SPECIFY VALDATION CRITERIA section 
+  What this code is doing is taking the argument you pass to the view e.g. /service/service-title and doing a lookup using drupal_get_normal_path (http://api.drupal.org/api/drupal/includes!path.inc/function/drupal_get_normal_path/7) to get the nid of the path. If this value does exist the original argument is replaced with its value and the view gets the numerical nid it expects.
+*/
+if (!empty($np[1])) {
+  $handler->argument = $np[1];
+  return TRUE; 
+} else {
+  return FALSE; 
+}
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

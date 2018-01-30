@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+<!--- add jQuery pages for this file --->
+<cfset request.jsFiles = listappend(request.jsFiles,"${1:JS File Name}") />
+<cfset request.commonjsFiles = listappend(request.commonjsFiles,"${2:common JS File Name}") />
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>jsfiles</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

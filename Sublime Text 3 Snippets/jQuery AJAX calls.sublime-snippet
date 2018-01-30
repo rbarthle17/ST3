@@ -1,0 +1,33 @@
+<snippet>
+	<content><![CDATA[
+var formData = \$('#form').serialize();
+// using base AJAX call for standard GET functions and small form POST
+\$.ajax({
+	type: "${1:GET|POST}",
+	url: "/components/remoteProxy.cfc?method=${2:CFC Method}&returnformat=json",
+	data: formData,
+	success: function(response){
+		if (response.SUCCESS) {
+			var myData = response.DATA;
+		} else {
+			alertError(response.ERRORS);
+		}
+	},
+	error:function(xhr,err){
+		alert("readyState: "+xhr.readyState+"\nstatus: "+xhr.status);
+		alert("responseText: "+xhr.responseText);
+	}
+});
+
+// using ajaxSubmit (good for submitting a whole form or file upload
+\$("#form").ajaxSubmit({
+	type: "post",
+	url: "components/remoteProxy.cfc?method=${2:CFC Method}&returnFormat=json",
+	success: ${3:Success Function Name}
+});
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>jqajax</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

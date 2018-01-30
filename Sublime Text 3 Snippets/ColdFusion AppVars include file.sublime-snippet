@@ -1,0 +1,87 @@
+<snippet>
+	<content><![CDATA[
+<!--- Document Information -----------------------------------------------------
+*
+*	Author:				Rob Barthle
+*	Filename:			appVars.cfm
+*	Description:		application globals page
+*
+*	\$Log\$
+*
+---------------------------------------------------------------------------- --->
+
+<cfset StructClear(APPLICATION) />
+<!--- EDIIAS: the server_id tag call goes here --->
+<cf_ias_server_id />
+<cflock name="appSetup" type="exclusive" throwontimeout="true" timeout="10">
+	<!--- initialize all persistent and unchanging variables here in the Application scope --->
+	<!--- EDIIAS: set server_id tag here --->
+	<cfset application.sServerTier = sServerTier />
+	<!--- initialize Zaden common component objects --->
+	<cfobject component="components.zaden" name="application.${1:application struct name}.cfc.zaden" />
+	<cfobject component="components.ses" name="application.${1:application struct name}.cfc.ses" />
+	<!--- ZADEN: get the server tier --->
+	<cftry>
+		<cfinvoke component="#application.${1:application struct name}.cfc.zaden#" method="serverID" returnvariable="application.sServerTier" />
+		<cfcatch type="any">
+			<cfdump label="cfcatch" var="#cfcatch#" expand="true" />
+			<cfabort />
+		</cfcatch>
+	</cftry>
+	<!--- environment-based variables --->
+	<cfswitch expression="#application.sServerTier#">
+		<cfcase value="DEV">
+			<!--- file/web root settings --->
+			<cfset application.${1:application struct name}.webBase = "/" />
+			<cfset application.${1:application struct name}.baseUrl = "http://${1:application struct name}.local/" />
+			<cfset application.${1:application struct name}.fileBase = "/Users/rob/Sites/cf11/${2:Domain Name}/" />
+			<!--- mailserver setup --->
+			<cfset application.mail.mailserver = "" />
+			<cfset application.mail.username = "" />
+			<cfset application.mail.password = "" />
+			<!--- mail settings --->
+			<cfset application.mail.alt_sender = "admin@${2:Domain Name}" />
+			<cfset application.mail.alt_recipients = "rob@zadenconsulting.com" />
+		</cfcase>
+		<cfcase value="TEST">
+			<cfset application.${1:application struct name}.webBase = "/${3:hostek account name}/" />
+			<cfset application.${1:application struct name}.baseUrl = "http://demo.zadenconsulting.com/${3:hostek account name}/" />
+			<cfset application.${1:application struct name}.fileBase = "/home/zadencon/public_html/demo/${3:hostek account name}/" />
+			<!--- mailserver setup --->
+			<cfset application.mail.mailserver = "mail.zadenconsulting.com" />
+			<cfset application.mail.username = "admin@zadenconsulting.com" />
+			<cfset application.mail.password = "Z@d3nMAIL" />
+			<!--- mail settings --->
+			<cfset application.mail.alt_sender = "admin@zadenconsulting.com" />
+			<cfset application.mail.alt_recipients = "rob@zadenconsulting.com" />
+		</cfcase>
+		<cfcase value="PROD">
+			<cfset application.${1:application struct name}.webBase = "/" />
+			<cfset application.${1:application struct name}.baseUrl = "http://www.${2:Domain Name}/" />
+			<cfset application.${1:application struct name}.fileBase = "/home/${3:hostek account name}/public_html/" />
+			<!--- mailserver setup --->
+			<cfset application.mail.mailserver = "mail.${2:Domain Name}" />
+			<cfset application.mail.username = "admin@${2:Domain Name}" />
+			<cfset application.mail.password = "${4:admin email password}" />
+			<!--- mail settings --->
+			<cfset application.mail.alt_sender = "admin@${2:Domain Name}" />
+			<cfset application.mail.alt_recipients = "rob@zadenconsulting.com" />
+		</cfcase>
+	</cfswitch>
+	<cfset application.${1:application struct name}.includes = application.${1:application struct name}.webBase & "includes/" />
+	<cfset application.${1:application struct name}.images = application.${1:application struct name}.webBase & "images/" />
+	<cfset application.${1:application struct name}.js = application.${1:application struct name}.webBase & "js/" />
+	<cfset application.${1:application struct name}.styles = application.${1:application struct name}.webBase & "styles/" />
+	<cfset application.${1:application struct name}.admin = application.${1:application struct name}.webBase & "admin/" />
+	<cfset application.${1:application struct name}.vfsDir = "ram://${2:Domain Name}/" />
+	<cfif not directoryExists(application.${1:application struct name}.vfsDir)>
+		<cfdirectory action="create" directory="#application.${1:application struct name}.vfsDir#" />
+	</cfif>
+	<!--- initialize other persistent component objects --->
+</cflock>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

@@ -1,0 +1,31 @@
+<snippet>
+	<content><![CDATA[
+<cfsavecontent variable="message_body">
+	<cfoutput>
+		<p>A user has encountered an error while viewing the site. Below is the diagnostic information.</p>
+		<!-- Scoped Variables for Debugging -->
+		<cfif isdefined("error")><cfdump expand="Yes" label="Error scope" var="#error#"><br></cfif>
+		<cfif isdefined("cfcatch")><cfdump expand="Yes" label="CFCatch scope" var="#cfcatch#"><br></cfif>
+		<cfif isdefined("cgi")><cfdump expand="Yes" label="CGI scope" var="#cgi#"><br></cfif>
+		<cfif isdefined("application")><cfdump expand="Yes" label="Application scope" var="#application#"><br></cfif>
+		<cfif isdefined("session")><cfdump expand="Yes" label="Session scope" var="#session#"><br></cfif>
+		<cfif isdefined("client")><cfdump expand="Yes" label="Client scope" var="#client#"><br></cfif>
+		<cfif isdefined("form")><cfdump expand="Yes" label="Form scope" var="#form#"><br></cfif>
+		<cfif isdefined("url")><cfdump expand="Yes" label="URL scope" var="#url#"><br></cfif>
+		<cfif isdefined("request")><cfdump expand="Yes" label="Request scope" var="#request#"><br></cfif>
+	</cfoutput>
+</cfsavecontent>
+ 
+<cf_ias_mail
+	to="[TO address]"
+	from="[FROM address]"
+	subject="[SITENAME] #sServerTier# - Error"
+	env="#sServerTier#"
+	message_body="#message_body#"
+	html="yes">
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

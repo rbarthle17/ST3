@@ -1,0 +1,46 @@
+<snippet>
+	<content><![CDATA[
+<!---    Date: 6/29/2011 Usage: encrypts PII --->
+<cffunction name="encryptPII" output="false" access="public" returntype="string" hint="encrypts PII">
+	<cfargument name="originalValue" type="string" required="true" />
+	<cfargument name="ss" type="string" required="true" />
+	<cfargument name="appID" type="string" required="true" />
+	<!--- decrypt the salt string to use --->
+	<cfset local.saltKey = decrypt(arguments.ss,arguments.appID,"AES") />
+	<!--- encrypt the PII string --->
+	<cfset local.stringToEncrypt = arguments.originalValue />
+	<cfloop from="1" to="10" index="local.i">
+		<cfset local.encryptedString = encrypt(variables.stringtoEncrypt,local.saltKey,"AES") />
+		<cfset local.stringToEncrypt = local.encryptedString />
+	</cfloop>
+	<cfreturn local.encryptedString />
+</cffunction>
+<!---    Date: 6/29/2011 Usage: decrypts PII --->
+<cffunction name="decryptPII" output="false" access="public" returntype="string" hint="decrypts PII">
+	<cfargument name="originalValue" type="string" required="true" />
+	<cfargument name="ss" type="string" required="true" />
+	<cfargument name="appID" type="string" required="true" />
+	<!--- decrypt the salt string to use --->
+	<cfset local.saltKey = decrypt(arguments.ss,arguments.appID,"AES") />
+	<!--- encrypt the PII string --->
+	<cfset local.stringToDecrypt = arguments.originalValue />
+	<cfloop from="1" to="10" index="local.i">
+		<cfset local.decryptedString = decrypt(variables.stringtoEncrypt,local.saltKey,"AES") />
+		<cfset local.stringToDecrypt = local.decryptedString />
+	</cfloop>
+	<cfreturn local.decryptedString />
+</cffunction>
+<!---    Date: 6/29/2011 Usage: encrypts the salt string to store in the DB --->
+<cffunction name="encryptSalt" output="false" access="public" returntype="string" hint="encrypts the salt string to store in the DB">
+	<cfargument name="ss" type="string" required="true" />
+	<cfargument name="appID" type="string" required="true" />
+	<!--- encrypt the salt string to use --->
+	<cfset local.saltKey = encrypt(arguments.ss,arguments.appID,"AES") />
+	<cfreturn local.saltKey />
+</cffunction>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,26 @@
+<snippet>
+	<content><![CDATA[
+<!---
+	Define the way in which the browser should interpret
+	the content that we are about to stream.
+--->
+<cfheader
+	name="content-disposition"
+	value="attachment; filename=[file name].xml"
+	/>
+ 
+<!---
+	When streaming the Excel XML data, trim the data and
+	replace all the inter-tag white space. No need to stream
+	any more content than we have to.
+--->
+<cfcontent
+	type="application/msexcel"
+	variable="#ToBinary( ToBase64( strXmlData.Trim().ReplaceAll( '>\s+', '>' ).ReplaceAll( '\s+<', '<' ) ) )#"
+	/>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,9 @@
+<snippet>
+	<content><![CDATA[
+<cfqueryparam value="#${1:Value}#" cfsqltype="cf_sql_${2:bigint bit blob char clob date decimal double float idstamp integer longvarchar money money4 numeric real refcursor smallint time timestamp tinyint varchar}" />
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>qp</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,14 @@
+<snippet>
+	<content><![CDATA[
+<!--- initialize the component inline since using CFOBJECT to create it. --->
+<cfset THIS.init() />
+<!---    Date: 6/29/2011 Usage: initializes variables to be used in all functions --->
+<cffunction name="init" output="false" access="public" hint="initializes variables to be used in all functions">
+	<cfreturn this />
+</cffunction>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	 <tabTrigger>initfun</tabTrigger> 
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,9 @@
+<snippet>
+	<content><![CDATA[
+#iif(${1:test case},de("${2:true}"),de("${3:false}"))#
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>iif</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

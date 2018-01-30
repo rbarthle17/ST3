@@ -1,0 +1,47 @@
+<snippet>
+	<content><![CDATA[
+<cfscript>
+//
+// * Converts the Form structure to hidden form fields.
+// *
+// * @param excludeList 	 A list of keys not to copy from the Form scope. Defaults to, and always includes, FIELDNAMES.
+
+function formToClient(){
+	//a variable for iterating
+	var key = "";
+	//should we exlude any?  by default, just the FIELDNAMES variable
+	var excludeList = "FIELDNAMES";
+	//a variable to return stuff
+	var outVar = "";
+	//if there is an argument, it is a list to exclude
+	if(arrayLen(arguments))
+		excludeList = excludeList & "," & arguments[1];
+	//now loop through the form scope and make hidden fields
+	for(key in form){
+		if(NOT listFindNoCase(excludeList,key))
+			client[key] = form[key];
+	}
+}
+
+/**
+ * Converts the Form structure to hidden form fields.
+ *
+ * @param theQuery 	 The query you want to convert to a structure of structures.
+ */
+function queryToClient(theQuery){
+	var cols  = ListToArray(theQuery.columnlist);
+	var thisRow = "";
+	var col = 1;
+
+	thisRow = structnew();
+	for(col = 1; col LTE arraylen(cols); col = col + 1){
+		client[cols[col]] = theQuery[cols[col]][1];
+	}
+}
+</cfscript>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

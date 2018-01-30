@@ -1,0 +1,66 @@
+<snippet>
+	<content><![CDATA[
+/* *************************************************************************************
+Process to recompile stored procedures, views, and UDFs after all changes are made above
+**************************************************************************************** */
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+DECLARE @objectname varchar(128)
+DECLARE @dboobjname varchar(132)
+DECLARE @objecttype char(2)
+
+DECLARE tbl_temp_cleanup CURSOR FOR
+SELECT dbo.sysobjects.name, dbo.sysobjects.xtype
+FROM dbo.sysobjects
+WHERE dbo.sysobjects.category = 0 and
+ dbo.sysobjects.xtype in ('P','V','FN') and NOT left(dbo.sysobjects.name,2) = 'dt'
+ORDER BY dbo.sysobjects.xtype, dbo.sysobjects.name
+
+OPEN tbl_temp_cleanup
+
+FETCH NEXT FROM tbl_temp_cleanup
+INTO @objectname, @objecttype 
+
+WHILE @@FETCH_STATUS = 0
+	Begin
+		if (@objecttype = 'V ') -- Views
+			Begin
+				PRINT 'View: '+ @objectname + ' was successfully refreshed'
+				SET @dboobjname = 'dbo.' + @objectname
+				EXEC dbo.sp_refreshview @dboobjname
+			End
+		if (@objecttype = 'P ') -- Stored Proceedure
+			Begin
+				PRINT 'Stored Procedure: ' + @objectname
+				SET @dboobjname = 'dbo.' + @objectname
+				EXEC dbo.sp_recompile @dboobjname
+			End
+		if (@objecttype = 'FN') -- User Defined Function
+			Begin
+				PRINT 'UDF: '+ @objectname
+				SET @dboobjname = 'dbo.' + @objectname
+				EXEC dbo.sp_recompile @dboobjname
+			End
+		FETCH NEXT FROM tbl_temp_cleanup
+		INTO @objectname, @objecttype 	  
+	End
+	
+CLOSE tbl_temp_cleanup
+DEALLOCATE tbl_temp_cleanup
+if @@error<>0
+PRINT 'ERROR OCCURRED' & @@error
+GO
+
+SET QUOTED_IDENTIFIER OFF 
+GO
+SET ANSI_NULLS ON 
+GO
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

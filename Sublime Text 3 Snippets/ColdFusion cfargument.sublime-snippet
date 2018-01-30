@@ -1,0 +1,9 @@
+<snippet>
+	<content><![CDATA[
+<cfargument name="${1:Name}" type="${2:any array binary boolean date guid numeric query string struct uuid}" required="${3:true false}" />
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>arg</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

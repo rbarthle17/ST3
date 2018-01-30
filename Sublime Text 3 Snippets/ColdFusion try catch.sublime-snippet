@@ -1,0 +1,16 @@
+<snippet>
+	<content><![CDATA[
+<cftry>
+	<cfcatch type="any">
+		<!--- debugging code, remember to remove --->
+		<cfdump expand="true" label="cfcatch" var="#cfcatch#" />
+		<cfabort /> 
+		<cfrethrow />
+	</cfcatch>
+</cftry>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>try</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,105 @@
+<snippet>
+	<content><![CDATA[
+<cfif isdefined("url.taskname")>
+	<!--- perform the indexing --->
+	<cftry>
+		<cfinvoke component="#application.cfc.searchManager#" method="doIndex" returnvariable="indexInfo" />
+		<cfcatch type="noInfo">
+			<cfset variables.noInfo = cfcatch.Message />
+		</cfcatch>
+		<cfcatch type="any">
+			<cfrethrow>
+		</cfcatch>
+	</cftry>
+
+	<!--- email the results to the one that kicked off the process --->
+	<cfif isdefined("url.emailID")>
+		<cftry>
+			<cfinvoke component="#application.cfc.userManager#" method="getUserInfo" user_id="#session.user_id#" returnvariable="qMISusers" />
+			<cfsavecontent variable="emailMsg">
+			<cfoutput>
+			<p>The Re-Indexing of the Verity collection you requested was completed on #DateFormat(Now(),"mm/dd/yyyy")# at #TimeFormat(Now(),"hh:mm tt")#</p>
+			<cfif isdefined("variables.noInfo")>
+				<p>#variables.noInfo#</p>
+			<cfelse>
+				<p>#indexInfo.inserted# records have been inserted. #indexInfo.updated# records have been updated.</p>
+			</cfif>
+			</cfoutput>
+			</cfsavecontent>
+			<!--- send the email --->
+			<cf_ias_mail
+				to="#getUserInfo.email_address#"
+				from="#application.datarStruc.pointofcontact#"
+				subject="Re-Index of Verity Complete"
+				env="#application.datarStruc.sServerTier#"
+				html="yes"
+				message_body="#emailMsg#">
+			<cfcatch type="any">
+				<cfrethrow>
+			</cfcatch>
+		</cftry>
+	</cfif>
+	<!--- remove the task from the task list --->
+	<cftry>
+		<cfschedule action="delete" task="#url.taskname#" />
+		<cfcatch type="any">
+			<cfrethrow>
+		</cfcatch>
+	</cftry>
+<cfelse>
+	<cfif session.datarUserStruc.ADMINROLE>
+		<cfset variables.taskname = "datar-verity-#year(now())##month(now())##day(now())#-#hour(now())##minute(now())##second(now())#" />
+		<!--- Use CFSCHEDULE to run the Job --->
+		<!--- I_EROD_75: hardcode COLP02 as the Prod URL. Colp01 does not work when the scheduler tries to run it due to firewall issues --->
+		<cftry>
+			<cfif application.datarStruc.sServerTier eq "DEV">
+				<!--- DEV server has a login tied to accessing the server --->
+				<cfschedule 
+					action="update" 
+					task="#variables.taskname#" 
+					operation="HTTPRequest" 
+					startdate="#dateformat(dateadd("n",5,now()),"dd-mmm-yyyy")#" 
+					starttime="#timeformat(dateadd("n",5,now()),"HH:mm")#"
+					requesttimeout="50000" 
+					interval="once" 
+					url="#application.datarStruc.URL#scheduled-tasks/manual-verity-index.cfm?taskname=#variables.taskname#&emailID=#session.dataruserstruc.userid#"
+					resolveurl="yes" 
+					username="cfmxuser" 
+					password="cfmxuser61">
+			<cfelseif application.datarStruc.sServerTier eq "PROD">
+				<!--- I_EROD_75 fix, hardcode wdchqdcolp02.ed.gov into the URL --->
+				<cfschedule 
+					action="update" 
+					task="#variables.taskname#" 
+					operation="HTTPRequest" 
+					startdate="#dateformat(dateadd("n",5,now()),"dd-mmm-yyyy")#" 
+					starttime="#timeformat(dateadd("n",5,now()),"HH:mm")#"
+					requesttimeout="50000" 
+					interval="once" 
+					url="http://wdchqdcolp02.ed.gov/CFAPPS/RSA/scheduled-tasks/manual-verity-index.cfm?taskname=#variables.taskname#&emailID=#session.dataruserstruc.userid#"
+					resolveurl="yes">
+			<cfelse>
+				<cfschedule 
+					action="update" 
+					task="#variables.taskname#" 
+					operation="HTTPRequest" 
+					startdate="#dateformat(dateadd("n",5,now()),"dd-mmm-yyyy")#" 
+					starttime="#timeformat(dateadd("n",5,now()),"HH:mm")#"
+					requesttimeout="50000" 
+					interval="once" 
+					url="#application.datarStruc.URL#scheduled-tasks/manual-verity-index.cfm?taskname=#variables.taskname#&emailID=#session.dataruserstruc.userid#"
+					resolveurl="yes">
+			</cfif>
+			<cfcatch type="any">
+			</cfcatch>
+		</cftry>
+	<cfelse>
+		<cfthrow type="noAdmin" message="You must be logged in as a DATAR administrator in order to use this function." />
+	</cfif>
+</cfif>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

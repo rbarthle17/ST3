@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+<!--- debugging code, remember to remove --->
+<cfdump expand="true" label="${1:variable}" var="#${1:variable}#" />
+<cfabort />
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>dump</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

@@ -1,0 +1,279 @@
+<snippet>
+	<content><![CDATA[
+<!--- Document Information -----------------------------------------------------
+*
+*	Author:				Rob Barthle
+*	Filename:			Application.cfc
+*	Description:		default application globals handler
+*
+*	\$Log\$
+*
+---------------------------------------------------------------------------- --->
+
+<cfcomponent hint="This is the default application page">
+	<!--- Set the application's variables in the "this" scope. These are the attributes of the CFAPPLICATION tag. --->
+	<cfset this.name = "${1:base application struct}" /><!--- change to ${1:base application struct}-demo for the demo server --->
+	<cfset this.applicationTimeout = createTimeSpan(1,0,5,0) /><!--- we will set up a nightly task to refresh application every 24 hours. This gives us a 5 minute window. --->
+	<cfset this.clientManagement = false />
+	<cfset this.sessionManagement = true />
+	<cfset this.sessionTimeout = createTimeSpan(0,0,30,0) />
+	<cfset this.setClientCookies = true />
+	<cfset this.setDomainCookies = false />
+	<cfset this.scriptProtect = "all" />
+	<cfset this.securejson = false />
+	<cfset this.datasource = "${1:base application struct}-db" /><!--- change to zadenDemo for the demo server --->
+
+	<cfscript>
+		/* dynamic tab indexes */
+		function incTabIdx() {
+			if (structkeyexists(request,"tabindex")) {
+				request.tabindex = request.tabindex + 10;
+			} else {
+				request.tabindex = 10;
+			}
+			/* for some odd reseon it was adding a decimal position. It never did this before, but remove it */
+			return(listgetat(request.tabindex,1,"."));
+		}
+		request.incTabIdx = incTabIdx;
+	</cfscript>
+
+	<cffunction name="onApplicationStart" returntype="boolean" access="public" output="true" hint="Fires when the application is first created.">
+		<cfinclude template="includes/appVars.cfm" />
+		<!--- Return out. --->
+		<cfreturn true />
+	</cffunction>
+	
+	<cffunction name="onSessionStart" returntype="boolean" hint="This function runs when the session is initiated">
+		<!--- include only if this.SessionManagement is true --->
+		<!--- initialize all session-specific variables here in the Session scope --->
+		<cflock name="newSession" type="exclusive" timeout="10" throwontimeout="true">
+			<cfset session.ie6msg = false />
+			<cfset session.${1:base application struct}.adminLogin = false />
+			<cfset session.${1:base application struct}.adminChangePassword = false />
+			<cfif not comparenocase("TEST",application.sServerTier)>
+				<cfset session.zadenDemo.loggedIn = false />
+			</cfif>
+		</cflock>
+		<!--- Return out. --->
+		<cfreturn true />
+	</cffunction>
+	
+	<cffunction name="onRequestStart" returntype="boolean" access="public" output="true" hint="Fires just prior to page processing.">
+		<!--- do not allow direct access to include files --->
+		<cfif findnocase("/includes/",cgi.SCRIPT_NAME)>
+			<cflocation addtoken="false" url="#application.${1:base application struct}.webBase#index.cfm" />
+			<cfabort />
+		</cfif>
+		<!--- manage SES variables if they exist --->
+		<cftry>
+			<cfset var pathInfo = reReplaceNoCase(trim(cgi.path_info), '.+\.cfm/? *', '') />
+			<cfif len(trim(pathInfo))>
+				<cfset var sesVars = '' />
+				<cfinvoke component="#application.${1:base application struct}.cfc.ses#" method="parseSES" returnvariable="sesVars">
+					<cfinvokeargument name="originalPathInfo" value="#pathInfo#" />
+				</cfinvoke>
+				<cfset var key = '' />
+				<cfloop collection="#sesVars#" item="key">
+					<cfset URL[key] = sesVars[key] />
+				</cfloop>
+			</cfif>
+			<cfcatch type="any">
+				<cfrethrow />
+			</cfcatch>
+		</cftry>
+		<!--- Re-Initialize the application if forced via URL --->
+		<cfif structkeyexists(url,"reinit")>
+			<cfset onApplicationStart() />
+			<cfset onSessionStart() />
+			<cfset variables.cacheIDs = cacheGetAllIds() />
+			<cfif arrayLen(variables.cacheIDs)>
+				<cfset cacheRemove(arraytolist(variables.cacheIDs),false) />
+			</cfif>
+		<cfelseif (application.sServerTier eq "DEV") and (structkeyexists(url,"reinitApp"))>
+			<!--- allows developers to code in CFCs without having to force reload both the application and session scopes --->
+			<cfset onApplicationStart() />
+			<cfset variables.cacheIDs = cacheGetAllIds() />
+			<cfif arrayLen(variables.cacheIDs)>
+				<cfset cacheRemove(arraytolist(variables.cacheIDs),false) />
+			</cfif>
+		<cfelseif (application.sServerTier eq "DEV") and (structkeyexists(url,"clearCache"))>
+			<!--- allows developers to clear cached objects without having to force reload both the application and session scopes --->
+			<cfset variables.cacheIDs = cacheGetAllIds() />
+			<cfif arrayLen(variables.cacheIDs)>
+				<cfset cacheRemove(arraytolist(variables.cacheIDs),false) />
+			</cfif>
+		</cfif>
+		<!--- ZADEN DEMO SITE: must be logged in to go further --->
+		<cfif not comparenocase("TEST",application.sServerTier)>
+			<cfif (structkeyexists(form,"clientLogin")) and (form.clientLogin)>
+				<cfset session.zadenDemo.loggedIn = true /> 
+			</cfif>
+			<cfif not session.zadenDemo.loggedIn>
+				<cflocation url="http://www.zadenconsulting.com/demo.cfm" />
+			</cfif>
+		</cfif>
+		<!--- remoting services CFC fix --->
+		<cfif listLast(CGI.CF_TEMPLATE_PATH, ".") is "cfc">
+			<!--- 1st level security check; if there is no method in URL string, this is not a valid request --->
+			<cfif structkeyexists(url,"method")>
+				<cftry>
+					<cfinvoke component="#application.${1:base application struct}.cfc.remoteProxy#" method="checkRequest" testMethod="#url.method#" />
+					<cfcatch type="any">
+						<cflog file="${1:base application struct}-remoteProxy-errors" text="#cfcatch.Message# #cfcatch.Detail#" />
+						<cfheader statuscode="#cfcatch.ErrorCode#" statustext="#cfcatch.Message# #cfcatch.Detail#" />
+						<cfabort />
+					</cfcatch>
+				</cftry>
+			</cfif>
+		</cfif>
+		<!---
+			IF THERE ARE ANY ACCESS-RESTRICTED AREAS, CHECK FOR LOGINS HERE
+			USE CFINCLUDE/CFABORT TO SHOW THE PAGE. MUST ABORT AFTER THE INCLUDE TAGS.
+		--->
+		<cfif findNoCase("admin/",cgi.SCRIPT_NAME)>
+			<cfif (not session.${1:base application struct}.adminLogin) and (not findNoCase("login.cfm",cgi.SCRIPT_NAME))>
+				<cfinclude template="#application.${1:base application struct}.admin#login.cfm" />
+				<cfabort />
+			<cfelseif (session.${1:base application struct}.adminChangePassword) and (not findNoCase("changePassword.cfm",cgi.SCRIPT_NAME))>
+				<cfinclude template="#application.${1:base application struct}.admin#changePassword.cfm" />
+				<cfabort />
+			</cfif>
+		</cfif>
+		<!--- initialize all request-specific variables here in the request scope --->
+		<cfset request.jsFiles = "" />
+		<cfset request.commonjsFiles = "" />
+		<!--- Return out. --->
+		<cfreturn true />
+	</cffunction>
+
+	<cffunction name="OnSessionEnd" access="public" returntype="void" output="true" hint="Fires when the session is terminated.">
+		<!--- include only if this.SessionManagement is true --->
+		<!--- Define arguments. --->
+		<cfargument name="SessionScope" type="struct" required="true" />
+		<cfargument name="ApplicationScope" type="struct" required="false" default="#StructNew()#" />
+		<!--- Return out. ---> 
+		<cfreturn /> 
+	</cffunction>
+
+	<cffunction name="OnApplicationEnd" access="public" returntype="void" output="false" hint="Fires when the application is terminated.">
+		<!--- Define arguments. --->
+		<cfargument name="ApplicationScope" type="struct" required="false" default="#StructNew()#" />
+		<!--- Return out. --->
+		<cfreturn />
+	</cffunction>
+
+	<cffunction name="onMissingTemplate" access="public" returntype="boolean" output="true">
+		<cfargument name="pageRequested" type="string" required="true" />
+		<!--- Use a try block to catch errors. --->
+		<cftry>
+			<!--- logging of 404 error --->
+			<cflog text="Attempted File: #cgi.CF_TEMPLATE_PATH# UA: #cgi.HTTP_USER_AGENT# IP: #cgi.REMOTE_ADDR#" file="cf404" />
+			<!--- relocate to the index page. --->
+			<cflocation addtoken="false" url="/index.cfm" />
+			<cfreturn true />
+			<!--- If an error occurs, return false and the default error
+			handler will run. --->
+			<cfcatch type="any">
+				<!--- error in error handler, dump it out --->
+				<cflog type="fatal" file="onMissingTemplate" text="Error in onMissingTemplate handler: #cfcatch.Message# #cfcatch.Detail#" />
+				<cfdump expand="true" label="Error in onMissingTemplate handler - details" var="#cfcatch#" />
+				<cfabort />
+			</cfcatch>
+		</cftry>
+	</cffunction>
+
+	<cffunction name="onError" access="public" returntype="void" output="true" hint="Fires when an exception occurs that is not caught by a try/catch.">
+		<!--- this is the error handling function --->
+		<!--- Define arguments. --->
+		<cfargument name="Exception" type="any" required="true" />
+		<cfargument name="EventName" type="string" required="false" default="" />
+		<!---
+			CFLocation will cause an error for no reason in the event model.
+			If that happens, the exceptions type will be Abort Exception.
+			Just return out if that is the case.
+		--->
+		<cfif (structkeyexists(ARGUMENTS,"Exception.RootCause.Type")) AND (CompareNoCase(ARGUMENTS.Exception.RootCause.Type, "coldfusion.runtime.AbortException") eq 0)>
+			<cfreturn />
+		</cfif>
+		<cfif findnocase("coldfusion.filter.FormValidationException",Arguments.Exception.StackTrace)>
+			<!--- Include the error page. Call as a tag module and pass in values to display if you like. --->
+			<cfset onRequestStart() />
+			<cflock name="valErrtoSession" type="exclusive" timeout="10" throwontimeout="true">
+				<cfset session.validationErrors = arguments.exception />
+			</cflock>
+			<cflocation addtoken="false" url="errorValidation.cfm" />
+		<cfelseif listLast(CGI.CF_TEMPLATE_PATH, ".") eq "cfc">
+			<cfset LOCAL.errorMsg = "" />
+			<!--- directly-accessed CFC threw the error: set up and return a response error --->
+			<!--- get message in descending order of detail --->
+			<cfif structkeyexists(arguments,"exception.cause.message")>
+				<cfset LOCAL.errorMsg = LOCAL.errorMsg & arguments.exception.cause.message />
+			</cfif>
+			<cfif structkeyexists(arguments,"exception.rootcause.message")>
+				<cfset LOCAL.errorMsg = LOCAL.errorMsg & arguments.exception.rootcause.message />
+			</cfif>
+			<cfif structkeyexists(arguments,"exception.detail")>
+				<cfset LOCAL.errorMsg = LOCAL.errorMsg & arguments.exception.detail />
+			</cfif>
+			<cfif structkeyexists(arguments,"exception.message")>
+				<cfset LOCAL.errorMsg = LOCAL.errorMsg & arguments.exception.message />
+			</cfif>
+			<cftry>
+				<cfinvoke component="#application.${1:base application struct}.cfc.remoteProxy#" method="returnResponseError" errorMsg="#LOCAL.errorMsg#" />
+				<cfcatch type="any"><cfabort /></cfcatch>
+			</cftry>
+		<cfelse>
+			<cftry>
+				<!--- delete the session variable for old errors --->
+				<!--- Include the error page. Call as a tag module and pass in values to display if you like.
+				<cfif structkeyexists(session,"error")>
+					<cflock timeout="10" throwontimeout="No" type="EXCLUSIVE" scope="SESSION">
+						<cfset structdelete(session,"error") />
+					</cflock>
+				</cfif>--->
+				<cfinclude template="error.cfm" />
+				<cfcatch type="any">
+					<!--- error in error handler, dump it out --->
+					<cflog type="fatal" file="onError" text="Error in onError handler: #cfcatch.Message# #cfcatch.Detail#" />
+					<cfdump expand="true" label="Error in error handler - details" var="#cfcatch#" />
+					<cfabort />
+				</cfcatch>
+			</cftry>
+		</cfif>
+		<!--- Return out. --->
+		<cfreturn />
+	</cffunction>
+
+	<!---
+		FOR USING COLDFIRE WITH ONREQUEST(), REMOVE IF NOT NEEDED
+	--->
+	<cffunction name="onRequestEnd" returntype="void">		
+		<cfif IsDefined("onRequest") and IsDebugMode()>
+			<cfset copyColdFireVariables() />
+		</cfif>	
+	</cffunction>
+	
+	<cffunction name="copyColdFireVariables" returntype="void" output="no" access="private" hint="Copies variables scoped variables defined in the ColdFire variables tab to the request scope so they are available to the coldfire.cfm debugging template.">
+		<cfset var varArray = [] />
+		<cfset var requestData = GetHttpRequestData() />
+		<cfset var i = 0 />
+		<cfif structKeyExists(requestData.headers,"x-coldfire-variables")>
+			<cfset varArray = DeserializeJSON(requestData.headers["x-coldfire-variables"]) />
+			<cfset request.__coldFireVariableValues__ = {} />
+		</cfif>
+		<cfloop array="#varArray#" index="varName">
+			<cfif CompareNoCase(Left(varName,10),"variables.") eq 0
+				OR (Find(".",varName) eq 0 AND ListFindNoCase("application,cgi,client,cookie,form,request,server,url",varName) eq 0)>
+				<cfif IsDefined(varName)>
+					<cfset request.__coldFireVariableValues__[varName] = evaluate(varName) />
+				</cfif>
+			</cfif>		
+		</cfloop>	
+	</cffunction>
+</cfcomponent>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

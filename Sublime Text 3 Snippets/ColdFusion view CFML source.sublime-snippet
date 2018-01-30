@@ -1,0 +1,14 @@
+<snippet>
+	<content><![CDATA[
+<!--- Put on top of your Template --->
+<cfif IsDefined("url.show")>
+     <cffile action="READ" file="#CGI.PATH_TRANSLATED#" variable="variables.thisfile">
+     <cfoutput><html><body><pre>#htmleditformat(variables.thisfile)#</pre></body></html></cfoutput>
+     <cfabort>
+</cfif>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

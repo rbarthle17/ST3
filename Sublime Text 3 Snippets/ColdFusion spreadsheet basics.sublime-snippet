@@ -1,0 +1,97 @@
+<snippet>
+	<content><![CDATA[
+<!--- export as XLSX --->
+<cfheader name="content-disposition" value="attachment; filename=MyExcelExport.xlsx" />
+<cfcontent type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" variable="#spreadsheetReadBinary(local.s)#" reset="true" />
+<!--- export as XLS --->
+<cfheader name="content-disposition" value="attachment; filename=MyExcelExport.xls" />
+<cfcontent type="application/vnd.ms-excel" variable="#spreadsheetReadBinary(local.s)#" reset="true" />
+
+
+<!--- build the spreadsheet object --->
+<cfset local.s = spreadsheetNew("Tab Name",true) />
+
+<!--- populate with the results of a query --->
+<cfset spreadsheetAddRows(local.s,local.qExcel) />
+
+<!--- add a new sheet --->
+<cfset SpreadsheetCreateSheet(local.s, "Table 1 alt") />
+<cfset SpreadsheetSetActiveSheet(local.s, "Table 1 alt") />
+
+<!--- Home Page Maps --->
+<!--- section title and column headers --->
+<cfset spreadsheetAddRow(local.s,'Home Page Maps') />
+<cfset spreadsheetAddRow(local.s,'Map Type,Map Title,Description,Academic Year,Grade Level,Subject,Display this Map on Website,Main MapBox Layer,Data URL,Display this Map on Home Page,Default Display to this Map on the State Snapshot District Tab page') />
+<!--- add data rows --->
+<cfset spreadsheetAddRows(local.s,local.qHomePageMaps) />
+<cfset spreadsheetAddRow(local.s,'') />
+<!--- State Snapshot District Tab --->
+<!--- section title and column headers --->
+<cfset spreadsheetAddRow(local.s,'State Snapshot District Tab') />
+<cfset spreadsheetAddRow(local.s,'Map Type,Map Title,Description,Academic Year,Grade Level,Subject,Display this Map on Website,Main MapBox Layer,Data URL,Display this Map on Home Page,Default Display to this Map on the State Snapshot District Tab page') />
+<!--- add data rows --->
+<cfset spreadsheetAddRows(local.s,local.qSnapshotMaps) />
+<cfset spreadsheetAddRow(local.s,'') />
+<!--- All Maps --->
+<!--- section title and column headers --->
+<cfset spreadsheetAddRow(local.s,'All Maps') />
+<cfset spreadsheetAddRow(local.s,'Map Type,Map Title,Description,Academic Year,Grade Level,Subject,Display this Map on Website,Main MapBox Layer,Data URL,Display this Map on Home Page,Default Display to this Map on the State Snapshot District Tab page') />
+<!--- add data rows --->
+<cfset spreadsheetAddRows(local.s,local.qOtherMaps) />
+<cfset spreadsheetAddRow(local.s,'') />
+<!--- Home Page Maps formatting --->
+<cfset spreadsheetMergeCells(local.s,1,1,1,11) />
+<cfset spreadsheetFormatCell(local.s,{fontsize="16",bold=true,alignment="center",fgcolor="pale_blue"},1,1) />
+<cfset spreadsheetSetRowHeight(local.s,1,21) />
+<cfset spreadsheetFormatRow(local.s,{bold=true,fgcolor="pale_blue"},2) />
+<!--- State Snapshot District Tab formatting --->
+<cfset local.currentRow = 2 + local.qHomePageMaps.recordcount + 2 />
+<cfset spreadsheetMergeCells(local.s,local.currentRow,local.currentRow,1,11) />
+<cfset spreadsheetFormatCell(local.s,{fontsize="16",bold=true,alignment="center",fgcolor="pale_blue"},local.currentRow,1) />
+<cfset spreadsheetSetRowHeight(local.s,local.currentRow,21) />
+<cfset local.currentRow++ />
+<cfset spreadsheetFormatRow(local.s,{bold=true,fgcolor="pale_blue"},local.currentRow) />
+<!--- All Maps formatting --->
+<cfset local.currentRow = local.currentRow + local.qSnapshotMaps.recordcount + 2 />
+<cfset spreadsheetMergeCells(local.s,local.currentRow,local.currentRow,1,11) />
+<cfset spreadsheetFormatCell(local.s,{fontsize="16",bold=true,alignment="center",fgcolor="pale_blue"},local.currentRow,1) />
+<cfset spreadsheetSetRowHeight(local.s,local.currentRow,21) />
+<cfset local.currentRow++ />
+<cfset spreadsheetFormatRow(local.s,{bold=true,fgcolor="pale_blue"},local.currentRow) />
+<!--- global row/column formatting --->
+<cfset spreadsheetFormatColumns(local.s,{textwrap=true,verticalalignment="vertical_top",dataformat="text"},'1-11') />
+<cfset SpreadSheetSetColumnWidth(local.s,1,15) />
+<cfset SpreadSheetSetColumnWidth(local.s,2,30) />
+<cfset SpreadSheetSetColumnWidth(local.s,3,46) />
+<cfset SpreadSheetSetColumnWidth(local.s,4,15) />
+<cfset SpreadSheetSetColumnWidth(local.s,5,15) />
+<cfset SpreadSheetSetColumnWidth(local.s,6,15) />
+<cfset SpreadSheetSetColumnWidth(local.s,7,8) />
+<cfset SpreadSheetSetColumnWidth(local.s,8,21) />
+<cfset SpreadSheetSetColumnWidth(local.s,9,38) />
+<cfset SpreadSheetSetColumnWidth(local.s,10,18) />
+<cfset SpreadSheetSetColumnWidth(local.s,11,24) />
+<!--- Academic years format issue. Have to re-enter the values in so that they show as text. This is a bug in CFSPREADSHEET --->
+<!--- start with the first data row --->
+<cfset local.currentRow = 3 />
+<cfloop query="local.qHomePageMaps">
+	<cfset spreadsheetSetCellValue(local.s,local.qHomePageMaps.academicYear,local.currentRow,4) />
+	<cfset local.currentRow++ />
+</cfloop>
+<cfset local.currentRow += 3 />
+<cfloop query="local.qSnapshotMaps">
+	<cfset spreadsheetSetCellValue(local.s,local.qSnapshotMaps.academicYear,local.currentRow,4) />
+	<cfset local.currentRow++ />
+</cfloop>
+<cfset local.currentRow += 3 />
+<cfloop query="local.qOtherMaps">
+	<cfset spreadsheetSetCellValue(local.s,local.qOtherMaps.academicYear,local.currentRow,4) />
+	<cfset local.currentRow++ />
+</cfloop>
+
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

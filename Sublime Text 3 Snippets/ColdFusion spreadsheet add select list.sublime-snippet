@@ -1,0 +1,27 @@
+<snippet>
+	<content><![CDATA[
+<!--- Create an instance of a new spreadsheet --->
+<cfset local.s = spreadsheetNew("My Spreadsheet", true)>
+
+<!--- we need all this so we can have dropdowns --->
+<cfset local.wb = local.s.getWorkBook()>
+<cfset local.ws = local.wb.getSheet("My Spreadsheet")>
+
+<cfset local.dataValidationConstraint = createObject("java","org.apache.poi.hssf.usermodel.DVConstraint")>
+<cfset local.cellRangeList = createObject("java","org.apache.poi.ss.util.CellRangeAddressList")>
+<cfset local.dataValidationHelper = createObject("java","org.apache.poi.hssf.usermodel.HSSFDataValidation").init(local.ws)>
+
+<!--- Define cell list rowstart, rowend, column start, column end --->
+<cfset local.list = local.cellRangeList.init(0, 1, 1, 1)>
+<cfset local.dvconstraint = local.dataValidationHelper.createExplicitListConstraint(["YES","NO"])>
+<cfset local.dataValidation = local.dataValidationHelper.createValidation(local.dvconstraint, local.list)>
+<cfset local.dataValidation.setSuppressDropDownArrow(true)>
+
+<!--- add it to the spreadsheet --->
+<cfset local.ws.addValidationData(dataValidation)>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

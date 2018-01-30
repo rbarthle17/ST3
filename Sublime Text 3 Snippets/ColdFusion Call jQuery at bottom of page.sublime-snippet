@@ -1,0 +1,38 @@
+<snippet>
+	<content><![CDATA[
+<!--- per page javascript calls --->
+<cfif (listlen(trim(request.jsFiles))) or (listlen(trim(request.commonjsFiles)))>
+	<cfoutput>
+		<script type="text/javascript" src="#application.${1:base application struct}.js#/includes/jquery-1.7.1.min.js"></script>
+		<!--- EDIIAS: use this block to add common jQuery libraries and css files --->
+		<cfif listlen(trim(request.commonjsFiles))>
+			<cfloop list="#request.commonjsFiles#" index="variables.j">
+				<script type="text/javascript" src="#application.${1:base application struct}.commonIncludes##variables.j#"></script>
+			</cfloop>
+		</cfif>
+		<cfif listlen(trim(request.commoncssFiles))>
+			<cfsavecontent variable="variables.tmpCSS">
+				<cfloop list="#request.commoncssFiles#" index="variables.c">
+					<cfoutput><link type="text/css" rel="stylesheet" href="#application.${1:base application struct}.commonStyles##variables.c#"></cfoutput>
+				</cfloop>
+			</cfsavecontent>
+			<cfhtmlhead text="#variables.tmpCSS#" />
+		</cfif>
+		<cfloop list="#request.jsFiles#" index="variables.i">
+			<cfswitch expression="#listlast(variables.i,'.')#">
+				<cfcase value="cfm">
+					<cfinclude template="#application.${1:base application struct}.js##variables.i#" />
+				</cfcase>
+				<cfcase value="js" >
+					<script type="text/javascript" src="#application.${1:base application struct}.js##variables.i#"></script>
+				</cfcase>
+			</cfswitch>
+		</cfloop>
+	</cfoutput>
+</cfif>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

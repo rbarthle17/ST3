@@ -1,0 +1,29 @@
+<snippet>
+	<content><![CDATA[
+// run-time jQuery code goes here, create functions below this
+\$(document).ready(function(){
+	// AJAX global setup options
+	\$.ajaxSetup({
+		cache: false,
+		dataType: "json",
+		statusCode: {
+			500: function(){
+				alert("There has been a critical error. It has been logged for the site administrators.");
+			}
+		}
+	});
+});
+// AJAX handler function: standard error display
+function alertError(errorArray) {
+	var errorMsg = "There was an error with your request:\n\n";
+	\$.each(errorArray,function(index,value){
+		errorMsg += errorArray[index].ERROR + "\n";
+	});
+	alert(errorMsg);
+}
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>jquery</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

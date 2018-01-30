@@ -1,0 +1,16 @@
+<snippet>
+	<content><![CDATA[
+<?php
+// to get the user access line you need, look up the checkbox value in the permissions page
+  global $user;
+  if (user_access('create page content', $user)) {
+    $output = l(t('Add new page'), 'node/add/page');
+    print $output;
+  }
+?>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>

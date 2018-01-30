@@ -1,0 +1,25 @@
+<snippet>
+	<content><![CDATA[
+<cfif REfindnocase('\.local\$',cgi.server_name)>
+	<!--- dev debugging dump --->
+	<h3>Error Information Scopes</h3>
+	<cfif isdefined("arguments")><cfdump expand="Yes" label="Arguments scope" var="#arguments#"><br></cfif>
+	<cfif isdefined("error")><cfdump expand="Yes" label="Error scope" var="#error#"><br></cfif>
+	<cfif isdefined("cfcatch")><cfdump expand="Yes" label="CFCatch scope" var="#cfcatch#"><br></cfif>
+	<cfif isdefined("application")><cfdump expand="Yes" label="Application scope" var="#application#"><br></cfif>
+	<cfif isdefined("session")><cfdump expand="Yes" label="Session scope" var="#session#"><br></cfif>
+	<cfif isdefined("request")><cfdump expand="Yes" label="Request scope" var="#request#"><br></cfif>
+	<cfif isdefined("client")><cfdump expand="Yes" label="Client scope" var="#client#"><br></cfif>
+	<cfif isdefined("cgi")><cfdump expand="Yes" label="CGI scope" var="#cgi#"><br></cfif>
+	<cfif isdefined("cookie")><cfdump expand="Yes" label="Cookie scope" var="#cookie#"><br></cfif>
+	<cfif isdefined("form")><cfdump expand="Yes" label="Form scope" var="#form#"><br></cfif>
+	<cfif isdefined("url")><cfdump expand="Yes" label="URL scope" var="#url#"><br></cfif>
+	<cfif isdefined("server")><cfdump expand="Yes" label="Server scope" var="#server#"></cfif>
+</cfif>
+
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>

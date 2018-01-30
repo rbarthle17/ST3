@@ -1,0 +1,17 @@
+<snippet>
+	<content><![CDATA[
+<cftransaction action="begin">
+	<cftry>
+		<cftransaction action="commit" />
+		<cfcatch type="any">
+			<cftransaction action="rollback" />
+			<cfrethrow />
+		</cfcatch>
+	</cftry>
+</cftransaction>
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>trans</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>text.html.cfm,source.cfscript.cfc</scope>
+</snippet>
